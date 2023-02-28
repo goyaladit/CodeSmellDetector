@@ -43,11 +43,50 @@
  */
 using namespace std;
 #include <iostream>
+#include "FileData.h"
+#include "FunctionData.h"
+
+static void mainMenu(FileData obj)
+{
+    //*access list of functions from FileData obj
+    cout << "Welcome to Code Smell Detection! The file you input contains the following methods/functions: " << endl;
+    //*print out list of functions
+    bool exit = false;
+    while(!exit)
+    {
+        cout << "Please choose what you want to do now (enter a number):" << endl;
+        cout << "1. Long Method/Function Detection\n" <<
+                "2. Long Parameter List Detection\n" <<
+                "3. Duplicated Code Detection\n" <<
+                "4. Quit\n"
+                << endl;
+        string userInput = "";
+        cin >> userInput;
+
+        //del
+        cout << "User Input is " << userInput << endl;
+
+//        if(userInput == "1")
+//            ...
+//        else if(userInput == "2")
+//            ...
+//        else if(userInput == "3")
+//            ...
+//        else if(userInput == "4")
+//            ...
+//        else
+//            ...
+
+    }
+}
 
 int main (int argc, char ** argv)
 {
+    //parse file and create FileData obj for it
+    //mainMenu(FileData)
 
-    cout << "HI" << endl;
+    //d
+    mainMenu(*new FileData);
 
     return 0;
 }
