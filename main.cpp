@@ -37,9 +37,13 @@
  * invalid input)
  * - define assumptions (ask prof. what you can assume)
  *
- *
- *
+ */
 
+
+/*
+ * ASSUMPTIONS:
+ * - test file is named TestFile.cpp
+ *
  */
 using namespace std;
 #include <iostream>
@@ -52,7 +56,7 @@ using namespace std;
 static void mainMenu(FileData obj)
 {
     //*access list of functions from FileData obj
-    cout << "Welcome to Code Smell Detection! The file you inputte contains the following methods/functions: " << endl;
+    cout << "Welcome to Code Smell Detection! The file you inputted contains the following methods/functions: " << endl;
     //*print out list of functions
     for(string name: obj.listOfFuncNames)
     {
@@ -91,26 +95,17 @@ static void mainMenu(FileData obj)
 int main (int argc, char ** argv)
 {
     ParsingMethods parseObj = *new ParsingMethods();
-    //parse file and create FileData obj for it
-    FileData file = *new FileData();
-    file.listOfFuncNames = parseObj.getListOfFuncNames();
-    mainMenu(file);
+//    //parse file and create FileData obj for it
+//    FileData file = *new FileData();
+//    file.listOfFuncNames = parseObj.getListOfFuncNames();
+//    mainMenu(file);
 
-
-    //d
-//    list<string> printThis = parseObj.getListOfFuncNames();
-//    for(string x : printThis)
-//    {
-//        cout << x << endl;
-//    }
-
-//    regex b("[A-Z]");
-//    string test = "erro ey ,at";
-//    if(regex_search(test, b))
-//        cout << "IT MATCHED!!";
-//    else
-//        cout << "FAIL";
-
+    map<string, int> hi = parseObj.getLinesOfCodeForEachFunc();
+    map<string ,int> :: iterator it;
+    for(it=hi.begin();it !=hi.end();++it)
+    {
+        std::cout << it->first << ' ' <<it->second << endl;
+    }
 
     return 0;
 }

@@ -10,14 +10,22 @@ using namespace std;
 #include <fstream>
 #include <regex>
 #include <string>
+#include<map>
 #include "FileData.h"
 #include "FunctionData.h"
 
 class ParsingMethods
 {
-
-
     public:
+
+
+        static string getFuncNameFromFuncSignature(string firstLineOfFunc)
+        {
+            int indexOfFirstSpace = firstLineOfFunc.find(' ');
+            int indexOfParenthesis = firstLineOfFunc.find('(');
+            string funcName = firstLineOfFunc.substr(indexOfFirstSpace + 1, indexOfParenthesis-indexOfFirstSpace-1);
+            return funcName;
+        }
 
         static list<string> getListOfFuncNames() {
             list<string> funcNames;
@@ -32,45 +40,60 @@ class ParsingMethods
                         //string temp contains first line of func
                         //code for pulling out func name
                         //ASSUMPTION - function first line is exactly of this form: "int fun1(int a, int b, int c, int d){"
-                        int indexOfFirstSpace = temp.find(' ');
-                        int indexOfParenthesis = temp.find('(');
-                        string funcName = temp.substr(indexOfFirstSpace + 1, indexOfParenthesis-indexOfFirstSpace-1);
+                        string funcName = getFuncNameFromFuncSignature(temp);
                         funcNames.push_back(funcName);
-
-                        //*add func name to funcNames list
                     }
-
                 }
+                testFile.close();
             }
-
             return funcNames;
         }
 
-        static void printLineByLine()
+
+        //returns dict of funcName (key) and LOC (value)
+        static map<string, int> getLinesOfCodeForEachFunc()
         {
+            map<string, int> linesOfCodeDict;
             fstream testFile;
             //ios:in for read operation
             testFile.open("TestFile.cpp", ios::in);
             if(testFile.is_open())
             {
+                regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{");
+                regex closingBracketOfFuncRegex("^\\}");
+                regex emptyLineRegex("^$");
+
                 string temp;
+                bool areCurrentlyInsideAFunc = false;
+                int linesInCurrFunc = 0;
+                string currFuncName = "";
+                //traverses file line by line
                 while(getline(testFile, temp))
                 {
-
-                    cout << "WORKS!!" << endl;
-
-
-                    regex b("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{");
-                    if(regex_search(temp, b))
+                    //check: first line of func
+                    if(regex_search(temp, firstLineOfFuncRegex)) //if first line of a func found
                     {
-                        cout << "Regex matched with the following: " << endl;
-                        cout << temp << endl << endl << endl;
+                        if(!areCurrentlyInsideAFunc)
+                        {
+                            areCurrentlyInsideAFunc = true;
+                            linesInCurrFunc = 0;
+                            currFuncName = getFuncNameFromFuncSignature(temp);
+                        }
                     }
+                    //if inside a func and not an empty line
+                    if(areCurrentlyInsideAFunc && !regex_search(temp, emptyLineRegex))
+                        linesInCurrFunc++;
 
+                    //check: closing bracket of func
+                    if(regex_search(temp, closingBracketOfFuncRegex)) //if ending bracket found
+                    {
+                        linesOfCodeDict[currFuncName] = linesInCurrFunc;
+                        areCurrentlyInsideAFunc = false;
+                    }
                 }
+                testFile.close();
             }
-
-
+            return linesOfCodeDict;
         }
 
 };
@@ -85,7 +108,7 @@ class ParsingMethods
 * "^[^\\s]\\w+\\s+\\w+\\(" = matches "int main("
  * [\s\S] = matches any character
  * ^[^\s]\w+\s+\w+\([\s\S]*\)[\s\S]*{ = matches "int main() {"
- *
+ * ^$ = matches empty string ""
  *
  *
 */
