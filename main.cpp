@@ -45,6 +45,8 @@ using namespace std;
 #include <iostream>
 #include "FileData.h"
 #include "FunctionData.h"
+#include "ParsingMethods.cpp"
+
 
 static void mainMenu(FileData obj)
 {
@@ -86,7 +88,8 @@ int main (int argc, char ** argv)
     //mainMenu(FileData)
 
     //d
-    mainMenu(*new FileData);
+    ParsingMethods parseObj = *new ParsingMethods();
+    parseObj.printLineByLine();
 
     return 0;
 }
