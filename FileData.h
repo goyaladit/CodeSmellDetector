@@ -13,8 +13,11 @@
 
 
 class FileData {
-    //FunctionData list
-    list<FunctionData> listOfFuncs;
+    public:
+        FileData() {};
+        //FunctionData list
+        list<FunctionData> listOfFuncs;
+        list<string> listOfFuncNames;
 
 
 

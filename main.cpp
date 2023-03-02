@@ -46,13 +46,19 @@ using namespace std;
 #include "FileData.h"
 #include "FunctionData.h"
 #include "ParsingMethods.cpp"
+#include <regex>
 
 
 static void mainMenu(FileData obj)
 {
     //*access list of functions from FileData obj
-    cout << "Welcome to Code Smell Detection! The file you input contains the following methods/functions: " << endl;
+    cout << "Welcome to Code Smell Detection! The file you inputte contains the following methods/functions: " << endl;
     //*print out list of functions
+    for(string name: obj.listOfFuncNames)
+    {
+        cout << name << " ";
+        cout << endl;
+    }
     bool exit = false;
     while(!exit)
     {
@@ -84,12 +90,27 @@ static void mainMenu(FileData obj)
 
 int main (int argc, char ** argv)
 {
+    ParsingMethods parseObj = *new ParsingMethods();
     //parse file and create FileData obj for it
-    //mainMenu(FileData)
+    FileData file = *new FileData();
+    file.listOfFuncNames = parseObj.getListOfFuncNames();
+    mainMenu(file);
+
 
     //d
-    ParsingMethods parseObj = *new ParsingMethods();
-    parseObj.printLineByLine();
+//    list<string> printThis = parseObj.getListOfFuncNames();
+//    for(string x : printThis)
+//    {
+//        cout << x << endl;
+//    }
+
+//    regex b("[A-Z]");
+//    string test = "erro ey ,at";
+//    if(regex_search(test, b))
+//        cout << "IT MATCHED!!";
+//    else
+//        cout << "FAIL";
+
 
     return 0;
 }
