@@ -35,7 +35,8 @@ class ParsingMethods
             if (testFile.is_open()) {
                 string temp;
                 while (getline(testFile, temp)) {
-                    regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{");
+//                    regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{");
+                    regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{*");
                     if (regex_search(temp, firstLineOfFuncRegex)) { //regex matched
                         //string temp contains first line of func
                         //code for pulling out func name
