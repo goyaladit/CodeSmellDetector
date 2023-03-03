@@ -47,8 +47,8 @@
  */
 using namespace std;
 #include <iostream>
-#include "FileData.h"
-#include "FunctionData.h"
+#include "FileData.cpp"
+#include "FunctionData.cpp"
 #include "ParsingMethods.cpp"
 #include <regex>
 
@@ -95,17 +95,63 @@ static void mainMenu(FileData obj)
 int main (int argc, char ** argv)
 {
     ParsingMethods parseObj = *new ParsingMethods();
-//    //parse file and create FileData obj for it
+////    //parse file and create FileData obj for it
 //    FileData file = *new FileData();
 //    file.listOfFuncNames = parseObj.getListOfFuncNames();
 //    mainMenu(file);
 
-    map<string, int> hi = parseObj.getLinesOfCodeForEachFunc();
-    map<string ,int> :: iterator it;
-    for(it=hi.begin();it !=hi.end();++it)
+//    map<string, int> hi = parseObj.getLinesOfCodeForEachFunc();
+//    map<string ,int> :: iterator it;
+//    for(it=hi.begin();it !=hi.end();++it)
+//    {
+//        std::cout << it->first << ' ' <<it->second << endl;
+//    }
+
+
+    FileData file = *new FileData();
+    //setting file.listOfFuncNames field
+    file.listOfFuncNames = parseObj.getListOfFuncNames();
+    //dictOfLOC is of form (key, value) -> (string, int) -> (funcName, LOC)
+    map<string,int> dictOfLOC = parseObj.getLinesOfCodeForEachFunc();
+    map<string,int> :: iterator iter;
+    //creating FunctionData() objects in file.listOfFuncs field and setting FunctionData.linesOfCode field
+    for(iter = dictOfLOC.begin(); iter != dictOfLOC.end(); ++iter)
     {
-        std::cout << it->first << ' ' <<it->second << endl;
+        FunctionData func = *new FunctionData();
+        func.nameOfFunc = iter->first;
+        func.linesOfCode = iter->second;
+        file.listOfFuncs.push_back(func);
     }
+    file.printLOCField();
+    //setting FunctionData.returnType field
+    map<string, string> dictOfReturnType = parseObj.getReturnTypeForEachFunc();
+    list<FunctionData>::iterator iterOne;
+    for (iterOne = file.listOfFuncs.begin(); iterOne != file.listOfFuncs.end(); ++iterOne) //traversing file.listOfFuncs
+    {
+        if(dictOfReturnType.count(iterOne->nameOfFunc)) //does nameOfFunc exist as key in dictOfReturnType
+        {
+            iterOne->returnType = dictOfReturnType[iterOne->nameOfFunc];
+        }
+    }
+    file.printReturnTypeField();
+
+
+    map<string, int> dictOfNumParams = parseObj.getNumParamsForEachFunc();
+    list<FunctionData>::iterator iterTwo;
+    for (iterTwo = file.listOfFuncs.begin(); iterTwo != file.listOfFuncs.end(); ++iterTwo) //traversing file.listOfFuncs
+    {
+        if(dictOfNumParams.count(iterTwo->nameOfFunc)) //does nameOfFunc exist as key in dictOfReturnType
+        {
+            iterTwo->numParameters = dictOfNumParams[iterTwo->nameOfFunc];
+        }
+    }
+    file.printNumParamsField();
+
+
+
+
+
+
 
     return 0;
 }
