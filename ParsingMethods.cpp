@@ -11,12 +11,101 @@ using namespace std;
 #include <regex>
 #include <string>
 #include<map>
+#include <set>
 #include "FileData.cpp"
 #include "FunctionData.cpp"
 
 class ParsingMethods
 {
+
+
+    const double SIMILARITY_THRESHOLD = 0.75;
     public:
+
+        //compares each function with each other and checks for jaccard similarity being greater than 0.75
+        static void printDuplicatedFunctions()
+        {
+            return;
+        }
+
+
+
+        //QUESTION: should codeblock of a function that's used for jaccard calculation include the function
+        //signature or not?
+
+        //returns dict<string, string> of funcName (key) and codeblock (value)
+        static map<string, string> getCodeBlockOfEachFunc()
+        {
+            map<string, string> codeBlockDict;
+            fstream testFile;
+            //ios:in for read operation
+            testFile.open("TestFile.cpp", ios::in);
+            if(testFile.is_open())
+            {
+                regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{*");
+                regex closingBracketOfFuncRegex("^\\}");
+                regex emptyLineRegex("^$");
+
+                string temp;
+                bool areCurrentlyInsideAFunc = false;
+                string codeBlockOfCurrFunc = "";
+                string currFuncName = "";
+                //traverses file line by line
+                while(getline(testFile, temp))
+                {
+                    //check: first line of func
+                    if(regex_search(temp, firstLineOfFuncRegex)) //if first line of a func found
+                    {
+                        if(!areCurrentlyInsideAFunc)
+                        {
+                            areCurrentlyInsideAFunc = true;
+                            codeBlockOfCurrFunc = "";
+                            currFuncName = getFuncNameFromFuncSignature(temp);
+                        }
+                    }
+                    //if inside a func and not an empty line
+                    if(areCurrentlyInsideAFunc)
+                        codeBlockOfCurrFunc += temp;
+
+                    //check: closing bracket of func
+                    if(regex_search(temp, closingBracketOfFuncRegex)) //if ending bracket found
+                    {
+                        codeBlockDict[currFuncName] = codeBlockOfCurrFunc;
+                        areCurrentlyInsideAFunc = false;
+                    }
+                }
+                testFile.close();
+            }
+            return codeBlockDict;
+        }
+
+
+
+
+        /*  Created this function myself and referred to Python implementation in following link:
+        * https://datascienceparichay.com/article/jaccard-similarity-python/
+        * Input: string of functions
+        */
+        static double jaccardSimilarityNum(string s1, string s2)
+        {
+            set<char> set1( s1.begin() , s1.end() );
+            set<char> set2( s2.begin() , s2.end() );
+
+            //intersection
+            std::vector<char> intersectionVector;
+            set_intersection(set1.begin(),set1.end(),set2.begin(),set2.end(), std::back_inserter(intersectionVector));
+
+            //union
+            std::vector<char> unionVector;
+            set_union(set1.begin(), set1.end(),set2.begin(),set2.end(), std::back_inserter(unionVector));
+
+            double intersectionLen = (double)intersectionVector.size();
+//            cout << endl << "intersectionLen: " << intersectionLen << endl;
+            double unionLen = (double)unionVector.size();
+//            cout << endl << "unionLen: " << unionLen << endl << endl;
+
+            return intersectionLen/unionLen;
+        }
 
     
 
