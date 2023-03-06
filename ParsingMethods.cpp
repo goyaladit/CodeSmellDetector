@@ -18,6 +18,8 @@ class ParsingMethods
 {
     public:
 
+    
+
         static int getNumCommasInString(string paramList) {
             int numCommas = 0;
             for(int i = 0; i < paramList.size(); i++)
@@ -33,8 +35,18 @@ class ParsingMethods
             //count number of commas between '(' and ')' and add one
             int indexOfOpeningParen = firstLineOfFunc.find('(');
             int indexOfClosingParen = firstLineOfFunc.find(')');
-            //check if '(' and ')' are right next to each other (means no params)
-            if(indexOfClosingParen - indexOfOpeningParen == 1)
+
+            //check with if there's any characters between '(' and ')'
+            bool anyCharsBetweenOpeningClosingParens = false;
+            for(int i = indexOfOpeningParen+1; i < indexOfClosingParen; i++)
+            {
+                if(firstLineOfFunc[i] != ' ')
+                {
+                    anyCharsBetweenOpeningClosingParens = true;
+                }
+            }
+
+            if(!anyCharsBetweenOpeningClosingParens)
             {
                 return 0;
             }
