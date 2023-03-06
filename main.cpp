@@ -51,6 +51,8 @@ using namespace std;
 #include "FunctionData.cpp"
 #include "ParsingMethods.cpp"
 #include <regex>
+#include <set>
+#include <unordered_set>
 
 
 static void mainMenu(FileData obj)
@@ -92,20 +94,12 @@ static void mainMenu(FileData obj)
     }
 }
 
+
 int main (int argc, char ** argv)
 {
     ParsingMethods parseObj = *new ParsingMethods();
 ////    //parse file and create FileData obj for it
-//    FileData file = *new FileData();
-//    file.listOfFuncNames = parseObj.getListOfFuncNames();
-//    mainMenu(file);
 
-//    map<string, int> hi = parseObj.getLinesOfCodeForEachFunc();
-//    map<string ,int> :: iterator it;
-//    for(it=hi.begin();it !=hi.end();++it)
-//    {
-//        std::cout << it->first << ' ' <<it->second << endl;
-//    }
 
 
     FileData file = *new FileData();
@@ -135,7 +129,7 @@ int main (int argc, char ** argv)
     }
     file.printReturnTypeField();
 
-
+    //setting FunctionData.numParameters field
     map<string, int> dictOfNumParams = parseObj.getNumParamsForEachFunc();
     list<FunctionData>::iterator iterTwo;
     for (iterTwo = file.listOfFuncs.begin(); iterTwo != file.listOfFuncs.end(); ++iterTwo) //traversing file.listOfFuncs
@@ -146,12 +140,25 @@ int main (int argc, char ** argv)
         }
     }
     file.printNumParamsField();
+    cout << endl << endl;
 
-
-
-
+    //printing out codeblock of each function
+    map<string, string> dictOfCodeBlocks = parseObj.getCodeBlockOfEachFunc();
+    map<string,string> :: iterator iterThree;
+    cout << "CODEBLOCKS.........." << endl;
+    for(iterThree = dictOfCodeBlocks.begin(); iterThree != dictOfCodeBlocks.end(); ++iterThree)
+    {
+        cout << "For " << iterThree->first << ", code block is: " << endl;
+        cout << iterThree->second << endl;
+    }
 
 
 
     return 0;
 }
+
+
+
+
+
+
