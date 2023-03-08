@@ -10,10 +10,15 @@ using namespace std;
 #include <fstream>
 #include <regex>
 #include <string>
+#include <tuple>
 #include<map>
 #include <set>
 #include "FileData.cpp"
 #include "FunctionData.cpp"
+
+
+const double JACCARD_SIMILARITY_THRESHOLD = 0.75;
+
 
 class ParsingMethods
 {
@@ -21,25 +26,80 @@ class ParsingMethods
 
     const double SIMILARITY_THRESHOLD = 0.75;
     public:
-
-        //compares each function with each other and checks for jaccard similarity being greater than 0.75
-        static void printDuplicatedFunctions()
+        string fileName;
+        ParsingMethods(string fileN="")
         {
-            return;
+            fileName = fileN;
         }
 
+        string getCodeBlockOfFuncFromVectorOfFuncs(string funcToFind, vector<FunctionData> listOfFuncs)
+        {
+            for(int i = 0; i < listOfFuncs.size(); i++)
+            {
+                if(listOfFuncs[i].nameOfFunc == funcToFind)
+                {
+                    return listOfFuncs[i].codeBlock;
+                }
+            }
+
+        }
+
+
+
+        //compares each function with each other and checks for jaccard similarity being greater than 0.75
+        void runDuplicateCodeDetection(vector<string> listOfFuncNames, vector<FunctionData> listOfFuncs)
+        {
+            //all combinations of funcs
+            if(listOfFuncNames.size() == 1)
+            {
+                cout << "There's only one function and so code duplication can't be calculated" << endl;
+            }
+            else
+            {
+                vector<vector<string>> funcCombos = returnVectorOfCombinations(listOfFuncNames);
+                for(int i = 0; i < funcCombos.size(); i++)
+                {
+                    string funcOne = funcCombos[i][0];
+                    string funcTwo = funcCombos[i][1];
+                    string codeBlockOne = getCodeBlockOfFuncFromVectorOfFuncs(funcOne, listOfFuncs);
+                    string codeBlockTwo = getCodeBlockOfFuncFromVectorOfFuncs(funcTwo, listOfFuncs);
+                    double jaccardNum = jaccardSimilarityNum(codeBlockOne, codeBlockTwo);
+                    if(jaccardNum > JACCARD_SIMILARITY_THRESHOLD)
+                    {
+                        cout << funcOne << " and " << funcTwo << " are duplicated." << endl;
+                    }
+                }
+            }
+
+        }
+
+        //only call if number of funcs is greater than 1
+        static vector<vector<string>> returnVectorOfCombinations(vector<string> funcNames)
+        {
+            vector<vector<string>> returnVect;
+            for(int i = 0; i < funcNames.size(); i++)
+            {
+                for(int j = i+1; j < funcNames.size(); j++)
+                {
+                    vector<string> temp {funcNames[i], funcNames[j]};
+                    returnVect.push_back(temp);
+    //            cout << funcNames[i] << ", " << funcNames[j] << endl;
+                }
+            }
+            return returnVect;
+        }
 
 
         //QUESTION: should codeblock of a function that's used for jaccard calculation include the function
         //signature or not?
 
         //returns dict<string, string> of funcName (key) and codeblock (value)
-        static map<string, string> getCodeBlockOfEachFunc()
+        map<string, string> getCodeBlockOfEachFunc()
         {
             map<string, string> codeBlockDict;
             fstream testFile;
             //ios:in for read operation
-            testFile.open("TestFile.cpp", ios::in);
+            testFile.open(this->fileName, ios::in);
             if(testFile.is_open())
             {
                 regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{*");
@@ -86,7 +146,7 @@ class ParsingMethods
         * https://datascienceparichay.com/article/jaccard-similarity-python/
         * Input: string of functions
         */
-        static double jaccardSimilarityNum(string s1, string s2)
+        double jaccardSimilarityNum(string s1, string s2)
         {
             set<char> set1( s1.begin() , s1.end() );
             set<char> set2( s2.begin() , s2.end() );
@@ -109,7 +169,7 @@ class ParsingMethods
 
     
 
-        static int getNumCommasInString(string paramList) {
+        int getNumCommasInString(string paramList) {
             int numCommas = 0;
             for(int i = 0; i < paramList.size(); i++)
                 if (paramList[i] == ',')
@@ -118,7 +178,7 @@ class ParsingMethods
         }
 
 
-        static int getNumParamsFromFuncSignature(string firstLineOfFunc)
+        int getNumParamsFromFuncSignature(string firstLineOfFunc)
         {
             //Ex of firstLineOfFunc: 'int fun2(int a, int b, int c, int d){'
             //count number of commas between '(' and ')' and add one
@@ -149,7 +209,7 @@ class ParsingMethods
         }
 
 
-        static string getReturnTypeFromFuncSignature(string firstLineOfFunc)
+        string getReturnTypeFromFuncSignature(string firstLineOfFunc)
         {
             //Ex of firstLineOfFunc: 'int fun2(int a, int b, int c, int d){'
             int indexOfFirstSpace = firstLineOfFunc.find(' ');
@@ -158,7 +218,7 @@ class ParsingMethods
 
         }
 
-        static string getFuncNameFromFuncSignature(string firstLineOfFunc)
+        string getFuncNameFromFuncSignature(string firstLineOfFunc)
         {
             int indexOfFirstSpace = firstLineOfFunc.find(' ');
             int indexOfParenthesis = firstLineOfFunc.find('(');
@@ -166,11 +226,11 @@ class ParsingMethods
             return funcName;
         }
 
-        static list<string> getListOfFuncNames() {
-            list<string> funcNames;
+        vector<string> getListOfFuncNames() {
+            vector<string> funcNames;
             fstream testFile;
             //ios:in for read operation
-            testFile.open("TestFile.cpp", ios::in);
+            testFile.open(this->fileName, ios::in);
             if (testFile.is_open()) {
                 string temp;
                 while (getline(testFile, temp)) {
@@ -190,12 +250,12 @@ class ParsingMethods
 
 
         //returns dict of funcName (key) and LOC (value)
-        static map<string, int> getLinesOfCodeForEachFunc()
+        map<string, int> getLinesOfCodeForEachFunc()
         {
             map<string, int> linesOfCodeDict;
             fstream testFile;
             //ios:in for read operation
-            testFile.open("TestFile.cpp", ios::in);
+            testFile.open(this->fileName, ios::in);
             if(testFile.is_open())
             {
                 regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{*");
@@ -237,12 +297,12 @@ class ParsingMethods
 
 
     //returns dict of funcName (key) and return type (value)
-    static map<string, string> getReturnTypeForEachFunc()
+    map<string, string> getReturnTypeForEachFunc()
     {
         map<string, string> returnTypeDict;
         fstream testFile;
         //ios:in for read operation
-        testFile.open("TestFile.cpp", ios::in);
+        testFile.open(this->fileName, ios::in);
         if(testFile.is_open())
         {
             regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{*");
@@ -267,12 +327,12 @@ class ParsingMethods
 
 
     //returns dict of funcName (key) and numParams (value)
-    static map<string, int> getNumParamsForEachFunc()
+    map<string, int> getNumParamsForEachFunc()
     {
         map<string, int> numParamsDict;
         fstream testFile;
         //ios:in for read operation
-        testFile.open("TestFile.cpp", ios::in);
+        testFile.open(this->fileName, ios::in);
         if(testFile.is_open())
         {
             regex firstLineOfFuncRegex("^[^\\s]\\w+\\s+\\w+\\([\\s\\S]*\\)[\\s\\S]*\\{*");

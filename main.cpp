@@ -52,7 +52,67 @@ using namespace std;
 #include "ParsingMethods.cpp"
 #include <regex>
 #include <set>
+#include <vector>
+#include <w32api.h>
 #include <unordered_set>
+
+const int LONG_METHOD_NUM_LINES_THRESHOLD = 15;
+const int LONG_PARAM_LIST_THRESHOLD = 3;
+
+
+static void runLongParameterListDetection(FileData obj)
+{
+    vector<string> longParamFuncs;
+    vector<int> longFuncsNumParams;
+    for(int i = 0; i < obj.listOfFuncs.size(); i++)
+    {
+        if(obj.listOfFuncs[i].numParameters > LONG_PARAM_LIST_THRESHOLD)
+        {
+            longParamFuncs.push_back(obj.listOfFuncs[i].nameOfFunc);
+            longFuncsNumParams.push_back(obj.listOfFuncs[i].numParameters);
+        }
+    }
+
+    if(longParamFuncs.size() == 0)
+    {
+        cout << "None of the functions have a long parameter list" << endl;
+    }
+    else
+    {
+        for(int i = 0; i < longParamFuncs.size(); i++)
+        {
+            cout << longParamFuncs[i] << " has a long Parameter List, and it has "
+                << longFuncsNumParams[i] << " parameters." << endl;
+        }
+    }
+}
+
+static void runLongMethodDetection(FileData obj)
+{
+    vector<string> longFuncs;
+    vector<int> longFuncsLOC;
+    for(int i = 0; i < obj.listOfFuncs.size(); i++)
+    {
+        if(obj.listOfFuncs[i].linesOfCode > LONG_METHOD_NUM_LINES_THRESHOLD)
+        {
+            longFuncs.push_back(obj.listOfFuncs[i].nameOfFunc);
+            longFuncsLOC.push_back(obj.listOfFuncs[i].linesOfCode);
+        }
+    }
+
+    if(longFuncs.size() == 0)
+    {
+        cout << "None of the functions is a Long Function" << endl;
+    }
+    else
+    {
+        for(int i = 0; i < longFuncs.size(); i++)
+        {
+            cout << longFuncs[i] << " is a Long Function, and it has "
+                << longFuncsLOC[i] << " lines of code." << endl;
+        }
+    }
+}
 
 
 static void mainMenu(FileData obj)
@@ -66,6 +126,8 @@ static void mainMenu(FileData obj)
         cout << endl;
     }
     bool exit = false;
+    ParsingMethods parsingObj = *new ParsingMethods();
+
     while(!exit)
     {
         cout << "Please choose what you want to do now (enter a number):" << endl;
@@ -80,28 +142,44 @@ static void mainMenu(FileData obj)
         //del
         cout << "User Input is " << userInput << endl;
 
-//        if(userInput == "1")
-//            ...
-//        else if(userInput == "2")
-//            ...
-//        else if(userInput == "3")
-//            ...
-//        else if(userInput == "4")
-//            ...
-//        else
-//            ...
+        if(userInput == "1")
+        {
+            runLongMethodDetection(obj);
+        }
+        else if(userInput == "2")
+        {
+            runLongParameterListDetection(obj);
+        }
+        else if(userInput == "3")
+        {
+            parsingObj.runDuplicateCodeDetection(obj.listOfFuncNames, obj.listOfFuncs);
+        }
+        else if(userInput == "4")
+        {
+            cout << "You chose Quit. Have a good day!" << endl;
+            exit = true;
+        }
+        else
+        {
+            cout << "Please enter valid input (a number from 1-4).";
+        }
 
     }
 }
 
 
+
 int main (int argc, char ** argv)
 {
-    ParsingMethods parseObj = *new ParsingMethods();
-////    //parse file and create FileData obj for it
+//    string fileName = argv[1];
 
 
+    //d
+    string fileName = "TestFile.cpp";
 
+
+    ParsingMethods parseObj = *new ParsingMethods(fileName);
+    //parse file and create FileData obj for it
     FileData file = *new FileData();
     //setting file.listOfFuncNames field
     file.listOfFuncNames = parseObj.getListOfFuncNames();
@@ -116,10 +194,10 @@ int main (int argc, char ** argv)
         func.linesOfCode = iter->second;
         file.listOfFuncs.push_back(func);
     }
-    file.printLOCField();
+//    file.printLOCField();
     //setting FunctionData.returnType field
     map<string, string> dictOfReturnType = parseObj.getReturnTypeForEachFunc();
-    list<FunctionData>::iterator iterOne;
+    vector<FunctionData>::iterator iterOne;
     for (iterOne = file.listOfFuncs.begin(); iterOne != file.listOfFuncs.end(); ++iterOne) //traversing file.listOfFuncs
     {
         if(dictOfReturnType.count(iterOne->nameOfFunc)) //does nameOfFunc exist as key in dictOfReturnType
@@ -127,30 +205,37 @@ int main (int argc, char ** argv)
             iterOne->returnType = dictOfReturnType[iterOne->nameOfFunc];
         }
     }
-    file.printReturnTypeField();
+//    file.printReturnTypeField();
 
     //setting FunctionData.numParameters field
     map<string, int> dictOfNumParams = parseObj.getNumParamsForEachFunc();
-    list<FunctionData>::iterator iterTwo;
+    vector<FunctionData>::iterator iterTwo;
     for (iterTwo = file.listOfFuncs.begin(); iterTwo != file.listOfFuncs.end(); ++iterTwo) //traversing file.listOfFuncs
     {
-        if(dictOfNumParams.count(iterTwo->nameOfFunc)) //does nameOfFunc exist as key in dictOfReturnType
+        if(dictOfNumParams.count(iterTwo->nameOfFunc)) //does nameOfFunc exist as key in dictOfNumParams
         {
             iterTwo->numParameters = dictOfNumParams[iterTwo->nameOfFunc];
         }
     }
-    file.printNumParamsField();
+//    file.printNumParamsField();
     cout << endl << endl;
 
-    //printing out codeblock of each function
+    //setting FunctionData.codeBlock field
     map<string, string> dictOfCodeBlocks = parseObj.getCodeBlockOfEachFunc();
-    map<string,string> :: iterator iterThree;
-    cout << "CODEBLOCKS.........." << endl;
-    for(iterThree = dictOfCodeBlocks.begin(); iterThree != dictOfCodeBlocks.end(); ++iterThree)
+    vector<FunctionData>::iterator iterThree;
+    for (iterThree = file.listOfFuncs.begin(); iterThree != file.listOfFuncs.end(); ++iterThree) //traversing file.listOfFuncs
     {
-        cout << "For " << iterThree->first << ", code block is: " << endl;
-        cout << iterThree->second << endl;
+        if(dictOfCodeBlocks.count(iterThree->nameOfFunc)) //does nameOfFunc exist as key in dictOfCodeBlocks
+        {
+            iterThree->codeBlock = dictOfCodeBlocks[iterThree->nameOfFunc];
+        }
     }
+    cout << endl << endl;
+//    parseObj.printDuplicatedFunctions(file.listOfFuncNames, file.listOfFuncs);
+
+    mainMenu(file);
+
+
 
 
 

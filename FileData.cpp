@@ -6,6 +6,7 @@
 
 #include <list>
 #include "FunctionData.cpp"
+#include <vector>
 
 
 #ifndef CODESMELLDETECTOR_FILEDATA_H
@@ -16,8 +17,9 @@ class FileData {
     public:
         FileData() {};
         //FunctionData list
-        list<FunctionData> listOfFuncs;
-        list<string> listOfFuncNames;
+        vector<FunctionData> listOfFuncs;
+        vector<string> listOfFuncNames;
+
 
 
         void printLOCField()
@@ -29,25 +31,25 @@ class FileData {
             }
         }
 
-    void printReturnTypeField()
-    {
-
-        cout << "Printing return type:" << endl;
-        for(FunctionData func: this->listOfFuncs)
+        void printReturnTypeField()
         {
-            func.printReturnType();
+
+            cout << "Printing return type:" << endl;
+            for(FunctionData func: this->listOfFuncs)
+            {
+                func.printReturnType();
+            }
         }
-    }
 
-    void printNumParamsField()
-    {
-
-        cout << "Printing num params:" << endl;
-        for(FunctionData func: this->listOfFuncs)
+        void printNumParamsField()
         {
-            func.printNumParams();
+
+            cout << "Printing num params:" << endl;
+            for(FunctionData func: this->listOfFuncs)
+            {
+                func.printNumParams();
+            }
         }
-    }
 
         bool doesNameExistInListOfFuncNames(string name)
         {
